@@ -93,14 +93,16 @@ class InstagramController
             return new Response(Response::$statusTexts[Response::HTTP_BAD_REQUEST], Response::HTTP_BAD_REQUEST);
         }
 
-        $accessToken = $this->client->getAccessToken(
+        $accessTokenData = $this->client->getAccessToken(
             $module['cfg_instagramAppId'],
             $module['cfg_instagramAppSecret'],
             $code,
             $this->router->generate('instagram_auth', [], RouterInterface::ABSOLUTE_URL)
         );
 
-        if (null === $accessToken) {
+        $accessToken = $accessTokenData['access_token'];
+
+        if (null === $accessTokenData) {
             return new Response(Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -114,7 +116,11 @@ class InstagramController
         }
 
         // Store the access token and remove temporary session key
-        $this->db->update('tl_module', ['cfg_instagramAccessToken' => $accessToken], ['id' => $sessionData['moduleId']]);
+        $this->db->update('tl_module', [
+            'cfg_instagramAccessToken' => $accessToken,
+            'cfg_instagramAccessTokenExpiresIn' => time() + $accessTokenData['expires_in']
+        ], ['id' => $sessionData['moduleId']]);
+
         $this->session->remove(ModuleListener::SESSION_KEY);
 
         return new RedirectResponse($sessionData['backUrl']);

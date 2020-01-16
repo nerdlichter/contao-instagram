@@ -17,3 +17,4 @@ $GLOBALS['TL_LANG']['tl_module']['cfg_instagramAppId'] = ['Instagram App ID', 'B
 $GLOBALS['TL_LANG']['tl_module']['cfg_instagramAppSecret'] = ['Instagram App Secret', 'Bitte geben Sie das Instagram App Secret ein.'];
 $GLOBALS['TL_LANG']['tl_module']['cfg_instagramAccessToken'] = ['Instagram Access Token', 'Dies ist ein automatich erzeugter Wert, welcher beim Abschicken des Formulars generiert wird.'];
 $GLOBALS['TL_LANG']['tl_module']['cfg_instagramRequestToken'] = ['Access Token anfordern', 'Aktivieren Sie diese Option um einen neuen Instagram Access Token anzufordern.'];
+$GLOBALS['TL_LANG']['tl_module']['cfg_instagramAccessTokenExpiresIn'] = ['Token Expires in', ''];

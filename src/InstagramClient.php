@@ -91,6 +91,7 @@ class InstagramClient
      */
     public function getMediaData(string $accessToken, int $moduleId = null, bool $cache = true): ?array
     {
+
         return $this->getData('https://graph.instagram.com/me/media', [
             'access_token' => $accessToken,
             'fields' => 'id,caption,media_type,media_url,permalink,timestamp',
@@ -163,7 +164,7 @@ class InstagramClient
     /**
      * Get the access token.
      */
-    public function getAccessToken(string $appId, string $appSecret, string $code, string $redirectUri): ?string
+    public function getAccessToken(string $appId, string $appSecret, string $code, string $redirectUri): ?array
     {
         try {
             $response = $this->getClient()->post('https://api.instagram.com/oauth/access_token', [
@@ -171,7 +172,7 @@ class InstagramClient
                     'app_id' => $appId,
                     'app_secret' => $appSecret,
                     'grant_type' => 'authorization_code',
-                    'redirect_uri' => $redirectUri,
+                    'redirect_uri' => str_replace('http', 'https', $redirectUri),
                     'code' => $code,
                 ],
             ]);
@@ -193,8 +194,73 @@ class InstagramClient
             return null;
         }
 
-        return $data['access_token'];
+        // Get a long-lived token
+
+        $accessToken = $data['access_token'];
+        return $this->getLongLivedToken($appSecret, $accessToken);
     }
+
+    public function getLongLivedToken(string $appSecret, string $accessToken): ?array
+    {
+        try {
+            $response = $this->getClient()->get('https://graph.instagram.com/access_token', [
+                'query' => [
+                    'client_secret' => $appSecret,
+                    'grant_type' => 'ig_exchange_token',
+                    'access_token' => $accessToken
+                ],
+            ]);
+        } catch (ClientException | ServerException $e) {
+            if (null !== $this->logger) {
+                $this->logger->error(sprintf('Unable to fetch the long lived Instagram access token: %s', $e->getMessage()), ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]);
+            }
+
+            return null;
+        }
+
+        $data = json_decode($response->getBody(), true);
+
+        if (!\is_array($data) || JSON_ERROR_NONE !== json_last_error()) {
+            if (null !== $this->logger) {
+                $this->logger->error(sprintf('Unable to fetch the long lived Instagram access token: %s', json_last_error_msg()), ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]);
+            }
+
+            return null;
+        }
+
+        return $data;
+    }
+
+    public function refreshToken(string $accessToken): ?array
+    {
+        try {
+            $response = $this->getClient()->get('https://graph.instagram.com/refresh_access_token', [
+                'query' => [
+                    'grant_type' => 'ig_refresh_token',
+                    'access_token' => $accessToken
+                ],
+            ]);
+        } catch (ClientException | ServerException $e) {
+            if (null !== $this->logger) {
+                $this->logger->error(sprintf('Unable to fetch the long lived Instagram access token: %s', $e->getMessage()), ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]);
+            }
+
+            return null;
+        }
+
+        $data = json_decode($response->getBody(), true);
+
+        if (!\is_array($data) || JSON_ERROR_NONE !== json_last_error()) {
+            if (null !== $this->logger) {
+                $this->logger->error(sprintf('Unable to fetch the long lived Instagram access token: %s', json_last_error_msg()), ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]);
+            }
+
+            return null;
+        }
+
+        return $data;
+    }
+
 
     /**
      * Get the client.

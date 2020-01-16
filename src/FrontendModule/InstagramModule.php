@@ -107,6 +107,7 @@ class InstagramModule extends Module
      */
     protected function getUserData(): array
     {
+        $this->maybeRefreshAccessToken();
         $response = $this->client->getUserData($this->cfg_instagramAccessToken, (int) $this->id);
 
         if (null === $response) {
@@ -121,6 +122,7 @@ class InstagramModule extends Module
      */
     protected function getFeedItems(): array
     {
+        $this->maybeRefreshAccessToken();
         $response = $this->client->getMediaData($this->cfg_instagramAccessToken, (int) $this->id);
 
         if (null === $response) {
@@ -140,5 +142,19 @@ class InstagramModule extends Module
         }
 
         return $data;
+    }
+
+    protected function maybeRefreshAccessToken() {
+        if($this->cfg_instagramAccessTokenExpiresIn - time() < 86400) {
+            $data = $this->client->refreshToken($this->cfg_instagramAccessToken);
+            if(empty($data)) {
+                return;
+            }
+
+            $model = \Contao\ModuleModel::findById($this->id);
+            $model->cfg_instagramAccessToken = $data['access_token'];
+            $model->cfg_instagramAccessTokenExpiresIn = time() + $data['expires_in'];
+            $model->save();
+        }
     }
 }

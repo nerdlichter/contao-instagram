@@ -50,6 +50,16 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cfg_instagramAccessToken'] = [
     'sql' => "varchar(255) NOT NULL default ''",
 ];
 
+
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['cfg_instagramAccessTokenExpiresIn'] = [
+    'label' => &$GLOBALS['TL_LANG']['tl_module']['cfg_instagramAccessTokenExpiresIn'],
+    'exclude' => true,
+    'inputType' => 'text',
+    'eval' => ['readonly' => true, 'tl_class' => 'w50'],
+    'sql' => "varchar(255) NOT NULL default ''",
+];
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['cfg_instagramRequestToken'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_module']['cfg_instagramRequestToken'],
     'exclude' => true,
