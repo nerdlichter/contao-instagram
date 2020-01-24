@@ -172,7 +172,7 @@ class InstagramClient
                     'app_id' => $appId,
                     'app_secret' => $appSecret,
                     'grant_type' => 'authorization_code',
-                    'redirect_uri' => str_replace('http', 'https', $redirectUri),
+                    'redirect_uri' => $redirectUri,
                     'code' => $code,
                 ],
             ]);
