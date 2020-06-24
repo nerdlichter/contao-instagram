@@ -122,26 +122,30 @@ class InstagramModule extends Module
      */
     protected function getFeedItems(): array
     {
-        $this->maybeRefreshAccessToken();
-        $response = $this->client->getMediaData($this->cfg_instagramAccessToken, (int) $this->id);
+        try {
+            $this->maybeRefreshAccessToken();
+            $response = $this->client->getMediaData($this->cfg_instagramAccessToken, (int) $this->id);
 
-        if (null === $response) {
+            if (null === $response) {
+                return [];
+            }
+
+            $data = $response['data'];
+
+            // Store the files locally
+            if ($this->cfg_instagramStoreFiles) {
+                $data = $this->client->storeMediaFiles($this->cfg_instagramStoreFolder, $data);
+            }
+
+            // Limit the number of items
+            if ($this->numberOfItems > 0) {
+                $data = \array_slice($data, 0, $this->numberOfItems);
+            }
+
+            return $data;
+        } catch($ex) {
             return [];
         }
-
-        $data = $response['data'];
-
-        // Store the files locally
-        if ($this->cfg_instagramStoreFiles) {
-            $data = $this->client->storeMediaFiles($this->cfg_instagramStoreFolder, $data);
-        }
-
-        // Limit the number of items
-        if ($this->numberOfItems > 0) {
-            $data = \array_slice($data, 0, $this->numberOfItems);
-        }
-
-        return $data;
     }
 
     protected function maybeRefreshAccessToken() {
