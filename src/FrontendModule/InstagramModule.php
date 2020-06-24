@@ -143,7 +143,7 @@ class InstagramModule extends Module
             }
 
             return $data;
-        } catch($ex) {
+        } catch(\Exception $ex) {
             return [];
         }
     }
